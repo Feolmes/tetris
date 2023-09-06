@@ -1,11 +1,17 @@
 <template>
-  <div class="panel">
-    <div v-for="(item, idx) in markAry" :key="idx" class="item">
-      <div v-for="(subItem, subIdx) in item" :key="subIdx" class="subItem">
-        <div class="content" :class="{ 'cover': subItem === COVERD || subItem === SETTLED }"></div>
+  <div class="main">
+    <div class="panel">
+      <div v-for="(item, idx) in markAry.slice(3)" :key="idx" class="item">
+        <div v-for="(subItem, subIdx) in item" :key="subIdx" class="subItem">
+          <div class="content" :class="{ 'cover': subItem === COVERD || subItem === SETTLED }"></div>
+        </div>
       </div>
     </div>
-    <div>得分：{{ score }}</div>
+    <div class="score">得分：{{ score }}</div>
+    <div class="over-area">
+      <div class="tips" v-if="isOver">游戏结束！！！</div>
+      <button v-if="isOver" @click.stop.prevent="reStart">重新开始</button>
+    </div>
   </div>
 </template>
 
@@ -37,7 +43,8 @@ export default {
       SETTLED,
       fallInterval: null,
       speed: 500,
-      score: 0
+      score: 0,
+      isOver: false
     }
   },
   created() {
@@ -51,12 +58,14 @@ export default {
   },
   methods: {
     reset() {
+      this.isOver = true;
       clearInterval(this.fallInterval);
       this.fallInterval = null;
       this.speed = 500;
       this.brickAry = [];
     },
     reStart() {
+      this.isOver = false;
       this.initArray();
       this.generateBrick();
       this.fall();
@@ -123,6 +132,7 @@ export default {
         } else {
           this.fillSquare(SETTLED);
           this.judgeIsSuccess();
+          if (this.isOver) return;
           this.generateBrick();
           this.fall();
         }
@@ -158,7 +168,6 @@ export default {
         for (let j = 0; j < this.markAry[i].length; j++) {
           if (this.markAry[i][j] === SETTLED) {
             this.reset();
-            alert('游戏结束');
             return;
           }
         }
@@ -166,6 +175,7 @@ export default {
     },
     // 监听键盘事件
     onKeydown(e) {
+      if (this.isOver) return;
       switch(e.keyCode) {
         case KEY.DOWN: 
           this.down();
@@ -204,6 +214,7 @@ export default {
       clearInterval(this.fallInterval);
       this.fallInterval = null;
       this.judgeIsSuccess();
+      if (this.isOver) return;
       this.generateBrick();
       this.fall();
     },
@@ -258,10 +269,21 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.score {
+  margin: auto;
+}
+.over-area {
+  margin: auto;
+}
 .panel {
+  margin: auto;
   display: inline-block;
   border: 10px solid black;
-  border-top: 0px;
 }
 .item {
   display: flex;
@@ -273,6 +295,7 @@ export default {
   width: 30px;
   height: 30px;
   background-color: gray;
+  border: 1px solid black;
 }
 .cover {
   background-color: red;
